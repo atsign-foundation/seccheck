@@ -4,72 +4,49 @@
 
 # Sample README
 
-Open with intent - we welcome contributions - we want pull requests and to hear about issues.
+seccheck (secondaryCheck) is a couple of scripts that check all the secondaries that are running 
+on a docker swarm. The check is simple, can openssl connect with the secondary and can the scan verb
+be used giving a publicSigning key.
+
+The intent is to find and report via gChat to the swarm operators if any secondaries are found to be problematic.
+
+We welcome contributions - we want pull requests and to hear about issues.
 
 ## Who is this for?
 
-The README should be addressed to somebody who's never seen this before.
-But also don't assume that they're a novice.
+This script is for DevOps who run a docker swarm running the @protocol and who want to ensure the well being of the secondaries running on the swarm.
 
-### Code user
 
-Does this repo publish to [pub.dev](https://pub.dev) or similar?
-In which case the code user just needs a pointer there - e.g. [at_client on pub.dev](https://pub.dev/packages/at_client)
-
-### Contributor
-
-This is the person who we want working with us here.
-[CONTRIBUTING.md](CONTRIBUTING.md) is going to have the detailed guidance on how to setup their tools,
-tests and how to make a pull request.
 
 ## Why, What, How?
 
 ### Why?
 
-What is the purpose of this project?
+Secondaries need to be checked regularly to ensure they can serve requests. Prior to this script running people had to report issues, this script checks regularly and can provide an early resolution to secondaries that either are not responding at all or have an inability to answer a simple scan request.
 
 ### What?
 
-What is needed to get the project and its dependencies installed?
+The only dependancy required on the machine running the scripts is the installation of expect.
+On an ubuntu machine this is pretty simple..
+
+```sudo apt install expect```
+
+Once installed the script can be installed and run either directly or via cron. In either case the account running the script must have docker group permissions.
+
+The only other thing to make sure is that the shell and expect scripts have executable flags set using `chmod 755 seccheck checksecondary.expect`.
 
 ### How?
 
-How does this work? How is this used to fulfil its intended purpose?
+The script makes use of the `docker service ls` command to list all the running services this is then used to derive the running secondaries on the swarm. The port number each secondary is listening on is then passed to a `expect` script and any failures are logged in `/tmp/seccheck`. The resulting number of failing secondaries is passed to gChat via a webhook/curl.
 
-## Checklist
+The number of Problematic Secondaries is sent to gChat via a webhook. The webhook URL is needed and instructions on how to do that can be found [here](https://developers.google.com/chat/how-tos/webhooks)
 
-### Writing
 
-Does the writing flow, with proper grammar and correct spelling?
 
-### Links
 
-Are the links to external resources correct?
-Are the links to other parts of the project correct
-(beware stuff carried over from previous repos where the
-project might have lived during earlier development)?
-
-### Description
-
-Has the Description field been filled out?
-
-### Acknowledgement/Attribution
-
-Have we correctly acknowledged the work of others (and their Trademarks etc.)
-where appropriate (per the conditions of their LICENSE?
-
-### LICENSE
-
-Which LICENSE are we using?  
-Is the LICENSE(.md) file present?  
-Does it have the correct dates, legal entities etc.?
 
 ## Maintainers
 
-Who created this?  
+[@cconstab](https://github.com/cconstab)
 
-Do they have complete GitHub profiles?  
-
-How can they be contacted?  
-
-Who is going to respond to pull requests?  
+Always happy to have contributions via pull requests and issues raised!
