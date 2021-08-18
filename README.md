@@ -2,7 +2,7 @@
 
 ### Now for a little internet optimism
 
-# Sample README
+# SecondaryCheck README
 
 seccheck (secondaryCheck) is a couple of scripts that check all the secondaries that are running 
 on a docker swarm. The check is simple, can openssl connect with the secondary and can the scan verb
