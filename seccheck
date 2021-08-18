@@ -2,7 +2,6 @@
 #
 FULL_PATH_TO_SCRIPT="$(realpath "$0")"
 SCRIPT_DIRECTORY="$(dirname "$FULL_PATH_TO_SCRIPT")"
-echo $SCRIPT_DIRECTORY
 # URL of gChat webhook
 # See https://developers.google.com/chat/how-tos/webhooks for more details
 URL="INSERT gChat webhook URL"
@@ -14,6 +13,7 @@ PID=$$
 DIR="/tmp/seccheck"
 mkdir -p $DIR
 LOG="$DIR/seccheck.${PID}.log"
+touch $LOG
 for a in `docker service ls |grep secondary:prod |sed 's/.*\*://'|sed 's/->.*$//'`
 do
 $SCRIPT_DIRECTORY/checksecondary.expect $a >> $LOG
