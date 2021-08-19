@@ -47,7 +47,7 @@ curl --location --request POST ${URL} --header 'Content-Type: application/json' 
                 do
                         SECONDARY=$(docker service ls |grep "$PORT->$PORT/tcp" |awk '{print $2}')
                         ATSIGN=$(docker service inspect $SECONDARY --pretty | grep Args |awk '{print $3}')
-                        ATSIGNS="$ATSIGN, $ATSIGNS"
+                        ATSIGNS="$ATSIGN ($PORT), $ATSIGNS"
                 done
                 curl --location --request POST ${URL} --header 'Content-Type: application/json' --data-raw "{\"text\": \"Of the ${RESULTS} these are the first few effected @signs,  $ATS
 IGNS\"}"
