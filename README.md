@@ -44,7 +44,7 @@ The number of Problematic Secondaries is sent to gChat via a webhook. The webhoo
 
 ### Bonus Commands
 
-If you are fault finding on a swarm you will find yourself looking up ports from @asigns and atsigns to ports... so
+If you are fault finding on a swarm you will find yourself looking up ports from @signs and @signs to ports... so
 
 a2d <@sign>    Will convert an @sign to a DNS:Port 
 p2s <port>      Will convert a port number to the secondary docker instance and the @sign it is hosting
