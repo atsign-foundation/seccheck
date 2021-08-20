@@ -1,0 +1,6 @@
+#!/bin/bash
+PORT=$1
+SECONDARY=$(docker service ls |grep "$PORT->$PORT/tcp" |awk '{print $2}')
+echo $SECONDARY
+SIGN=$(docker service inspect $SECONDARY --pretty | grep Args |awk '{print $3}')
+echo $SIGN

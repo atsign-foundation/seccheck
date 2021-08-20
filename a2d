@@ -1,0 +1,32 @@
+#!/usr/bin/expect -f
+set timeout 5
+log_user 0
+
+# check the number of args
+if {[llength $argv] != 1} {
+  send_user "Usage: a2d <@sign>\n"
+  exit 1
+}
+
+set atsign [lindex $argv 0]
+
+set atsign [string trimleft $atsign @]
+spawn sh -c "openssl s_client -ign_eof -quiet -brief root.atsign.org:64 2>/dev/null"
+
+expect {
+timeout { send_user "Connection failed to get an @ prompt at root.atsign.org:64" }
+eof { send_user "Connection failed to root.atsign.org:64" }
+"@"
+}
+
+send "$atsign\r"
+
+
+expect {
+"\n@"
+}
+
+set lines [split $expect_out(buffer) \n]
+set variable [lindex $lines 1]
+
+puts $variable
