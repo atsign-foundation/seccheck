@@ -1,11 +1,5 @@
 #!/bin/bash
 #
-# UPADATES is the number of simultaneous updates of docker containers at one time
-# When using shepherd this is 1
-# When updating an image the secondary is OFFLINE
-# This is due to the underlying HiveDB onoly allowing a single process to open a box
-# In the future this may change
-UPDATES="1"
 # Max number of affected @signs in chat
 MAX="10"
 ATSIGNS=""
@@ -13,29 +7,35 @@ FULL_PATH_TO_SCRIPT="$(realpath "$0")"
 SCRIPT_DIRECTORY="$(dirname "$FULL_PATH_TO_SCRIPT")"
 # URL of gChat webhook
 # See https://developers.google.com/chat/how-tos/webhooks for more details
-URL="INSERT gChat webhook URL"
+URL="<gChat webhook URL>"
 # leave this many files in the logs directory
 # Allows us to investigate and not max out the files
 LEAVE="24"
+# Get list of ports to test then test them..
 PID=$$
 DIR="/tmp/seccheck"
 mkdir -p $DIR
 LOG="$DIR/seccheck.${PID}.log"
+LOGDC="$DIR/seccheck_dc.${PID}.log"
 touch $LOG
-# Get list of ports to test then test them..
 for a in `docker service ls |grep secondary:prod |sed 's/.*\*://'|sed 's/->.*$//'`
 do
 $SCRIPT_DIRECTORY/checksecondary.expect $a >> $LOG
 done
 RESULTS="`wc -l $LOG |cut -d' ' -f1`"
-if (( RESULTS == UPDATES ))
+# Lets double check we still have failures
+# It's important to wait just a while as docker may have restarted a container
+# Or Shepherd might be upgrading a container
+if (( RESULTS > 0 ))
 then
-        TCP=$(grep "TCP connection failed" $LOG|wc -l|cut -d' ' -f1)
-        if (( TCP == UPDATES ))
-        then
-                RESULTS=0
-        fi
+        sleep 10
+        for PORT in `cat $LOG | awk '{print $NF}'`
+                do
+                        $SCRIPT_DIRECTORY/checksecondary.expect $PORT >> $LOGDC
+                done
+        RESULTS="`wc -l $LOGDC |cut -d' ' -f1`"
 fi
+
 
 if (( RESULTS > 0 ))
 then
@@ -43,14 +43,13 @@ then
 curl --location --request POST ${URL} --header 'Content-Type: application/json' --data-raw "{\"text\": \"${RESULTS} Problematic Secondaries \"}"
         if (( RESULTS <= MAX ))
         then
-                for PORT in `cat $LOG | awk '{print $NF}'`
+                for PORT in `cat $LOGDC | awk '{print $NF}'`
                 do
                         SECONDARY=$(docker service ls |grep "$PORT->$PORT/tcp" |awk '{print $2}')
                         ATSIGN=$(docker service inspect $SECONDARY --pretty | grep Args |awk '{print $3}')
-                        ATSIGNS="$ATSIGN, $ATSIGNS"
+                        ATSIGNS="$ATSIGN ($PORT), $ATSIGNS"
                 done
-                curl --location --request POST ${URL} --header 'Content-Type: application/json' --data-raw "{\"text\": \"Of the ${RESULTS} these are the first few effected @signs,  $ATS
-IGNS\"}"
+                curl --location --request POST ${URL} --header 'Content-Type: application/json' --data-raw "{\"text\": \"Of the ${RESULTS} these are the first few effected @signs,  $ATSIGNS\"}"
         fi
 fi
 #
