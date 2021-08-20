@@ -41,16 +41,13 @@ if (( RESULTS > 0 ))
 then
 # Send results to gChat
 curl --location --request POST ${URL} --header 'Content-Type: application/json' --data-raw "{\"text\": \"${RESULTS} Problematic Secondaries \"}"
-        if (( RESULTS <= MAX ))
-        then
-                for PORT in `cat $LOGDC | awk '{print $NF}'`
+                for PORT in `cat $LOGDC | tail -$MAX  | awk '{print $NF}'`
                 do
                         SECONDARY=$(docker service ls |grep "$PORT->$PORT/tcp" |awk '{print $2}')
                         ATSIGN=$(docker service inspect $SECONDARY --pretty | grep Args |awk '{print $3}')
                         ATSIGNS="$ATSIGN ($PORT), $ATSIGNS"
                 done
                 curl --location --request POST ${URL} --header 'Content-Type: application/json' --data-raw "{\"text\": \"Of the ${RESULTS} these are the first few effected @signs,  $ATSIGNS\"}"
-        fi
 fi
 #
 # Do some tidying up of logs files
