@@ -42,8 +42,25 @@ The script makes use of the `docker service ls` command to list all the running 
 The number of Problematic Secondaries is sent to gChat via a webhook. The webhook URL is needed and instructions on how to do that can be found [here](https://developers.google.com/chat/how-tos/webhooks)
 
 
+### Bonus Commands
 
+If you are fault finding on a swarm you will find yourself looking up ports from @asigns and atsigns to ports... so
 
+a2d <@sign>    Will convert an @sign to a DNS:Port 
+p2s <port>      Will convert a port number to the secondary docker instance and the @sign it is hosting
+
+These commands can be found in atsign-company/seccheck 
+a2d can run anywhere expect is installed
+p2s can only run and is only useful on a docker swarm hosting secondaries.
+
+```
+cconstab@hornet-01:~$ a2d @colin
+79b6d83f-5026-5fda-8299-5a0704bd2416.hornet.atsign.zone:1029
+cconstab@hornet-01:~$ p2s 1029
+79b6d83f-5026-5fda-8299-5a0704bd2416_secondary
+@colin
+cconstab@hornet-01:~$
+```
 
 ## Maintainers
 
