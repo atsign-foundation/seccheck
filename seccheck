@@ -16,7 +16,7 @@ LOG="$DIR/seccheck.${PID}.log"
 LOGDC="$DIR/seccheck_dc.${PID}.log"
 touch $LOG
 # Get list of ports to test then test them..
-for a in `docker service ls |grep secondary:prod |sed 's/.*\*://'|sed 's/->.*$//'`
+for a in `docker service ls |grep secondary:$VERSION |sed 's/.*\*://'|sed 's/->.*$//'`
 do
 $SCRIPT_DIRECTORY/checksecondary.expect $a >> $LOG
 done
