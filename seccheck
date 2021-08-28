@@ -1,23 +1,21 @@
 #!/bin/bash
 #
-# Max number of affected @signs in chat
-MAX="10"
-ATSIGNS=""
 FULL_PATH_TO_SCRIPT="$(realpath "$0")"
 SCRIPT_DIRECTORY="$(dirname "$FULL_PATH_TO_SCRIPT")"
-# URL of gChat webhook
-# See https://developers.google.com/chat/how-tos/webhooks for more details
-URL="<gChat webhook URL>"
-# leave this many files in the logs directory
-# Allows us to investigate and not max out the files
-LEAVE="24"
-# Get list of ports to test then test them..
+
+if [ ! -f "$SCRIPT_DIRECTORY/.ENV" ]; then
+    echo "$SCRIPT_DIRECTORY/.ENV does not exist."
+    echo "ENV.example is template to use"
+    exit 1
+fi
+
+source $SCRIPT_DIRECTORY/.ENV
 PID=$$
-DIR="/tmp/seccheck"
 mkdir -p $DIR
 LOG="$DIR/seccheck.${PID}.log"
 LOGDC="$DIR/seccheck_dc.${PID}.log"
 touch $LOG
+# Get list of ports to test then test them..
 for a in `docker service ls |grep secondary:prod |sed 's/.*\*://'|sed 's/->.*$//'`
 do
 $SCRIPT_DIRECTORY/checksecondary.expect $a >> $LOG
