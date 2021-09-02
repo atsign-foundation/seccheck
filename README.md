@@ -41,6 +41,8 @@ The script makes use of the `docker service ls` command to list all the running 
 
 The number of Problematic Secondaries is sent to gChat via a webhook. The webhook URL is needed and instructions on how to do that can be found [here](https://developers.google.com/chat/how-tos/webhooks)
 
+### Instalation
+copy the ENV.example file to .ENV 'cp ENV.example .ENV` edit the .ENV file to have the right variables for your environment, clues are noted in the file. Run the seccheck script and make sure it runs fine. If you want to check that the alarms work scale back a secondary for example `docker service scale inherentchicken_secondary=0` re run the secheck script and you should get an alert via GChat. Once you are happy put the secondary back in service with `docker service scale inherentchicken_secondary=1' and put in a crontab entry to run the script every x minutes. Examples of crontab are include in the repo.
 
 ### Bonus Commands
 
