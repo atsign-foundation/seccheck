@@ -51,5 +51,8 @@ fi
 # Do some tidying up of logs files
 COUNT=$(ls -1 $DIR | wc -l)
 LEFT=$((COUNT - LEAVE))
-[[ $LEFT < 0 ]] && LEFT=0
+if (( $LEFT >= 0 ))
+then
 rm $(ls -td $DIR/* |tail -$LEFT)
+fi
+exit 0
