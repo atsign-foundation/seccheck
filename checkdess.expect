@@ -1,0 +1,28 @@
+#!/usr/bin/expect -f
+set timeout 2
+log_user 0
+# check the number of args
+if {[llength $argv] != 1} {
+  send_user "Usage: checksecondary.expect port_number\n"
+  exit 1
+}
+
+set hostport [lindex $argv 0]
+
+spawn openssl s_client -ign_eof -brief $hostport
+
+expect {
+timeout { send_user "Connection failed to get @ prompt on $hostport\n"; exit 1}
+eof { send_user "TCP connection failed to $hostport\n"; exit 1}
+"\n@"
+}
+
+send "scan\r"
+
+expect {
+timeout { send_user "Scan failed on $hostport\n"; exit 1}
+eof { send_user "Scan failed on $hostport\n"; exit 1}
+"signing_publickey@"
+}
+
+send "\003"

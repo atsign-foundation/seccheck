@@ -1,0 +1,56 @@
+#!/bin/bash
+#
+FULL_PATH_TO_SCRIPT="$(realpath "$0")"
+SCRIPT_DIRECTORY="$(dirname "$FULL_PATH_TO_SCRIPT")"
+
+if [ ! -f "$SCRIPT_DIRECTORY/.ENV" ]; then
+    echo "$SCRIPT_DIRECTORY/.ENV does not exist."
+    echo "ENV.example is template to use"
+    exit 1
+fi
+
+source "$SCRIPT_DIRECTORY"/.ENV
+PID=$$
+mkdir -p "$DIR"
+LOG="$DIR/seccheck.${PID}.log"
+LOGDC="$DIR/seccheck_dc.${PID}.log"
+touch "$LOG"
+# Get list of hosts & ports to test then test them..
+while read -r HOSTPORT 
+do
+    "$SCRIPT_DIRECTORY"/checkdess.expect "$HOSTPORT" >> "$LOG"
+done < dess.txt
+RESULTS="$(wc -l "$LOG" |cut -d' ' -f1)"
+# Lets double check we still have failures
+# It's important to wait just a while as docker may have restarted a container
+# Or Shepherd might be upgrading a container
+if (( RESULTS > 0 ))
+then
+    sleep 10
+    for DCHOSTPORT in $(awk '{print $NF}' "$LOG")
+    do
+        "$SCRIPT_DIRECTORY"/checkdess.expect "$DCHOSTPORT" >> "$LOGDC"
+    done
+    DCRESULTS="$(wc -l "$LOGDC" | cut -d' ' -f1)"
+fi
+
+
+if (( DCRESULTS > 0 ))
+then
+# Send results to gChat
+    curl --location --request POST "${URL}" --header 'Content-Type: application/json' --data-raw "{\"text\": \"${RESULTS} Problematic Dess Secondaries \"}"
+    for DCHOSTPORT in $(tail -"$MAX" "$LOGDC" | awk '{print $NF}')
+    do
+        SECONDARIES="$DCHOSTPORT, $SECONDARIES"
+    done
+    curl --location --request POST "${URL}" --header 'Content-Type: application/json' --data-raw "{\"text\": \"Of the ${RESULTS} these are the first few effected Dess servers,  $SECONDARIES\"}"
+fi
+#
+# Do some tidying up of logs files
+COUNT=$(ls -1 "$DIR" | wc -l)
+LEFT=$((COUNT - LEAVE))
+if (( LEFT >= 0 ))
+then
+    rm "$(ls -td "$DIR"/* |tail -$LEFT)"
+fi
+exit 0
