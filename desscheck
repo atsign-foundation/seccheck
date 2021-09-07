@@ -12,8 +12,8 @@ fi
 source "$SCRIPT_DIRECTORY"/.ENV
 PID=$$
 mkdir -p "$DIR"
-LOG="$DIR/seccheck.${PID}.log"
-LOGDC="$DIR/seccheck_dc.${PID}.log"
+LOG="$DIR/desscheck.${PID}.log"
+LOGDC="$DIR/desscheck_dc.${PID}.log"
 touch "$LOG"
 # Get list of hosts & ports to test then test them..
 while read -r HOSTPORT 
