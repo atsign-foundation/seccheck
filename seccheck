@@ -9,50 +9,50 @@ if [ ! -f "$SCRIPT_DIRECTORY/.ENV" ]; then
     exit 1
 fi
 
-source $SCRIPT_DIRECTORY/.ENV
+source "$SCRIPT_DIRECTORY"/.ENV
 PID=$$
-mkdir -p $DIR
+mkdir -p "$DIR"
 LOG="$DIR/seccheck.${PID}.log"
 LOGDC="$DIR/seccheck_dc.${PID}.log"
-touch $LOG
+touch "$LOG"
 # Get list of ports to test then test them..
-for a in `docker service ls |grep secondary:$VERSION |sed 's/.*\*://'|sed 's/->.*$//'`
+for PORT in $(docker service ls |grep secondary:"$VERSION" |sed 's/.*\*://'|sed 's/->.*$//')
 do
-$SCRIPT_DIRECTORY/checksecondary.expect $a >> $LOG
+"$SCRIPT_DIRECTORY"/checksecondary.expect "$PORT" >> "$LOG"
 done
-RESULTS="`wc -l $LOG |cut -d' ' -f1`"
+RESULTS="$(wc -l "$LOG" |cut -d' ' -f1)"
 # Lets double check we still have failures
 # It's important to wait just a while as docker may have restarted a container
 # Or Shepherd might be upgrading a container
 if (( RESULTS > 0 ))
 then
         sleep 10
-        for PORT in `cat $LOG | awk '{print $NF}'`
+        for DCPORT in $(awk '{print $NF}' "$LOG")
                 do
-                        $SCRIPT_DIRECTORY/checksecondary.expect $PORT >> $LOGDC
+                        "$SCRIPT_DIRECTORY"/checksecondary.expect "$DCPORT" >> "$LOGDC"
                 done
-        RESULTS="`wc -l $LOGDC |cut -d' ' -f1`"
+        RESULTS="$(wc -l "$LOGDC" | cut -d' ' -f1)"
 fi
 
 
 if (( RESULTS > 0 ))
 then
 # Send results to gChat
-curl --location --request POST ${URL} --header 'Content-Type: application/json' --data-raw "{\"text\": \"${RESULTS} Problematic Secondaries \"}"
-                for PORT in `cat $LOGDC | tail -$MAX  | awk '{print $NF}'`
+curl --location --request POST "${URL}" --header 'Content-Type: application/json' --data-raw "{\"text\": \"${RESULTS} Problematic Secondaries \"}"
+                for PORT in $(tail -"$MAX" "$LOGDC" | awk '{print $NF}')
                 do
                         SECONDARY=$(docker service ls |grep "$PORT->$PORT/tcp" |awk '{print $2}')
-                        ATSIGN=$(docker service inspect $SECONDARY --pretty | grep Args |awk '{print $3}')
+                        ATSIGN=$(docker service inspect "$SECONDARY" --pretty | grep Args |awk '{print $3}')
                         ATSIGNS="$ATSIGN ($PORT), $ATSIGNS"
                 done
-                curl --location --request POST ${URL} --header 'Content-Type: application/json' --data-raw "{\"text\": \"Of the ${RESULTS} these are the first few effected @signs,  $ATSIGNS\"}"
+                curl --location --request POST "${URL}" --header 'Content-Type: application/json' --data-raw "{\"text\": \"Of the ${RESULTS} these are the first few effected @signs,  $ATSIGNS\"}"
 fi
 #
 # Do some tidying up of logs files
-COUNT=$(ls -1 $DIR | wc -l)
+COUNT=$(ls -1 "$DIR" | wc -l)
 LEFT=$((COUNT - LEAVE))
-if (( $LEFT >= 0 ))
+if (( LEFT >= 0 ))
 then
-rm $(ls -td $DIR/* |tail -$LEFT)
+rm "$(ls -td "$DIR"/* |tail -$LEFT)"
 fi
 exit 0
