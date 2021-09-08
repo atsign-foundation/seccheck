@@ -51,6 +51,6 @@ COUNT=$(ls -1 "$DIR" | wc -l)
 LEFT=$((COUNT - LEAVE))
 if (( LEFT >= 0 ))
 then
-    rm "$(ls -td "$DIR"/* |tail -$LEFT)"
+    rm -f $(ls -td "$DIR"/* |tail -$LEFT)
 fi
 exit 0
