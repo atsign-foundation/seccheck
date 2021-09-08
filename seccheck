@@ -31,10 +31,10 @@ then
     do
         "$SCRIPT_DIRECTORY"/checksecondary.expect "$DCPORT" >> "$LOGDC"
     done
-    RESULTS="$(wc -l "$LOGDC" | cut -d' ' -f1)"
+    DCRESULTS="$(wc -l "$LOGDC" | cut -d' ' -f1)"
 fi
 
-if (( RESULTS > 0 ))
+if (( DCRESULTS > 0 ))
 then
 # Send results to gChat
     curl --location --request POST "${URL}" --header 'Content-Type: application/json' --data-raw "{\"text\": \"${RESULTS} Problematic Secondaries \"}"
@@ -52,6 +52,6 @@ COUNT=$(ls -1 "$DIR" | wc -l)
 LEFT=$((COUNT - LEAVE))
 if (( LEFT >= 0 ))
 then
-    rm "$(ls -td "$DIR"/* |tail -$LEFT)"
+    rm -f $(ls -td "$DIR"/* |tail -$LEFT)
 fi
 exit 0
