@@ -26,7 +26,7 @@ RESULTS="$(wc -l "$LOG" |cut -d' ' -f1)"
 # Or Shepherd might be upgrading a container
 if (( RESULTS > 0 ))
 then
-    sleep 10
+    sleep 60
     for DCPORT in $(awk '{print $NF}' "$LOG")
     do
         "$SCRIPT_DIRECTORY"/checksecondary.expect "$DCPORT" >> "$LOGDC"
@@ -37,14 +37,14 @@ fi
 if (( DCRESULTS > 0 ))
 then
 # Send results to gChat
-    curl --location --request POST "${URL}" --header 'Content-Type: application/json' --data-raw "{\"text\": \"${RESULTS} Problematic Secondaries \"}"
+    curl --location --request POST "${URL}" --header 'Content-Type: application/json' --data-raw "{\"text\": \"${DCRESULTS} Problematic Secondaries \"}"
     for PORT in $(tail -"$MAX" "$LOGDC" | awk '{print $NF}')
     do
         SECONDARY=$(docker service ls |grep "$PORT->$PORT/tcp" |awk '{print $2}')
         ATSIGN=$(docker service inspect "$SECONDARY" --pretty | grep Args |awk '{print $3}')
         ATSIGNS="$ATSIGN ($PORT), $ATSIGNS"
     done
-    curl --location --request POST "${URL}" --header 'Content-Type: application/json' --data-raw "{\"text\": \"Of the ${RESULTS} these are the first few effected @signs,  $ATSIGNS\"}"
+    curl --location --request POST "${URL}" --header 'Content-Type: application/json' --data-raw "{\"text\": \"Of the ${DCRESULTS} these are the first few effected @signs,  $ATSIGNS\"}"
 fi
 #
 # Do some tidying up of logs files
