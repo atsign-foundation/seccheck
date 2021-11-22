@@ -14,8 +14,8 @@ set atsign [string trimleft $atsign @]
 spawn sh -c "openssl s_client -ign_eof -quiet -brief root.atsign.wtf:64 2>/dev/null"
 
 expect {
-timeout { send_user "Connection failed to get an @ prompt at root.atsign.org:64" }
-eof { send_user "Connection failed to root.atsign.org:64" }
+timeout { send_user "Connection failed to get an @ prompt at root.atsign.wtf:64" }
+eof { send_user "Connection failed to root.atsign.wtf:64" }
 "@"
 }
 
