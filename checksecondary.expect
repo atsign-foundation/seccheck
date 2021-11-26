@@ -22,7 +22,7 @@ send "scan\r"
 expect {
 timeout { send_user "Scan failed on port $port\n"; exit 1}
 eof { send_user "Scan failed on port $port\n"; exit 1}
-"signing_publickey@"
+"data:["
 }
 
 send "\003"
