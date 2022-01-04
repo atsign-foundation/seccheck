@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-DNSERROR="No DNS address"
+DNSERROR="DNS Error "
 FULL_PATH_TO_SCRIPT="$(realpath "$0")"
 SCRIPT_DIRECTORY="$(dirname "$FULL_PATH_TO_SCRIPT")"
 
@@ -32,9 +32,15 @@ do
         nslookup  ${secondary//:*/} &>/dev/null
         if [[ $? -eq 0 ]]
          then
+		 LBTEST=$(nslookup ${secondary//:*/} | grep $LB | wc -l)
+		 if [[ $LBTEST -eq 1 ]]
+		then
                  echo | openssl s_client -connect $secondary 2>/dev/null | openssl x509 -noout  -checkend $EXPIREDAYS >> $DATESEC
+		else
+	         echo "$DNSERROR: record not pointing to Load Balancer $LB" >> $DATESEC
+		 fi 
          else
-                echo $DNSERROR >> $DATESEC
+                echo "$DNSERROR: record not found" >> $DATESEC
         fi
  done
 
