@@ -65,6 +65,11 @@ secondary back in service with
 `docker service scale inherentchicken_secondary=1` and put in a crontab entry
 to run the script every x minutes. Examples of crontab are include in the repo.
 
+### Certificate and DNS entry checking
+On occasion certficates can fail to get updated and it is nice to know before it effects someone. 
+`certcheck.sh`
+ is a small script that can be put in a cron job to run once a day and it will check both DNS is in place and that the certificates running currently will not expire in X days. X can be set in the .ENV file the default we choose was 10 days.
+
 ### Bonus Commands
 
 If you are fault finding on a swarm you will find yourself looking up ports
