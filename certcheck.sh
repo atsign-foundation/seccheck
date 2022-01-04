@@ -40,8 +40,8 @@ do
 
 # Check results
 grep -v "Certificate will not expire" $DATESEC > $ISSUESEC
-TOTALPROBLEMS=$(cat ./issues | wc -l)
-DNSPROBLEMSCOUNT="$(grep "$DNSERROR" ./issues| wc -l)"
+TOTALPROBLEMS=$(cat $ISSUESEC | wc -l)
+DNSPROBLEMSCOUNT="$(grep "$DNSERROR" $ISSUESEC| wc -l)"
 CERTPROBLEMSCOUNT=$((TOTALPROBLEMS - DNSPROBLEMSCOUNT))
 
 grep "$DNSERROR"  $ISSUESEC| tail -$MAX  > $DNSISSUESEC
