@@ -21,7 +21,7 @@ CERTISSUESEC="$DIR/certissues.${PID}.log"
 
 #
 # Get the services
-docker service ls |grep 1/1 |grep second| awk '{ print $2 $6} ' | sed 's/_secondary\*/.hornet.atsign.zone/g' |sed 's/->.*$//g' > $LISTSEC
+docker service ls |grep 1/1 |grep second| awk '{ print $2 $6} ' | sed 's/_secondary\*/$DNS/g' |sed 's/->.*$//g' > $LISTSEC
 #Cylce through the services
 # Check DNS entry
 # Check Expiry Date within X days
