@@ -21,7 +21,7 @@ CERTISSUESEC="$DIR/certissues.${PID}.log"
 
 #
 # Get the services
-docker service ls |grep 1/1 |grep second| awk '{ print $2 $6} ' | sed 's/_secondary\*/'${DNS}'/g' |sed 's/->.*$//g' > $LISTSEC
+docker service ls |grep 1/1 |grep secondary:"$VERSION"| awk '{ print $2 $6} ' | sed 's/_secondary\*/'${DNS}'/g' |sed 's/->.*$//g' > $LISTSEC
 #Cylce through the services
 # Check DNS entry
 # Check Expiry Date within X days
@@ -35,7 +35,7 @@ do
 		 LBTEST=$(nslookup ${secondary//:*/} | grep $LB | wc -l)
 		 if [[ $LBTEST -eq 1 ]]
 		then
-                 echo | openssl s_client -connect $secondary 2>/dev/null | openssl x509 -noout  -checkend $EXPIREDAYS >> $DATESEC
+                 echo | openssl s_client -showcerts -connect $secondary 2>/dev/null | openssl x509 -noout  -checkend $EXPIREDAYS >> $DATESEC
 		else
 	         echo "$DNSERROR: record not pointing to Load Balancer $LB" >> $DATESEC
 		 fi 
