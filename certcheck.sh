@@ -18,7 +18,9 @@ DATESEC="$DIR/secdates.${PID}.log"
 ISSUESEC="$DIR/secissues.${PID}.log"
 DNSISSUESEC="$DIR/dnsissues.${PID}.log"
 CERTISSUESEC="$DIR/certissues.${PID}.log"
-
+#
+# Convert Days into seconds
+EXPIREDAYS=$(($EXPIREDAYS * 86400)) 
 #
 # Get the services
 docker service ls |grep 1/1 |grep secondary:"$VERSION"| awk '{ print $2 $6} ' | sed 's/_secondary\*/'${DNS}'/g' |sed 's/->.*$//g' > $LISTSEC
