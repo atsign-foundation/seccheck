@@ -69,5 +69,5 @@ grep -v "$DNSERROR"  $ISSUESEC| tail -$MAX > $CERTISSUESEC
  EXPIREDAYS=$(($EXPIREDAYS / 86400))
 if [[ $TOTALPROBLEMS -gt 0 ]]
 then
-curl --location --request POST "${URL}" --header 'Content-Type: application/json' --data-raw "{\"text\": \"Total number of secondaries with certificate or DNS problems ${TOTALPROBLEMS}\n\n${CERTPROBLEMSCOUNT} Secondary Certificates that expire in less than $EXPIREDAYS days\n${DNSPROBLEMSCOUNT} Problematic Secondary DNS entries\n\nFirst up to ${MAX} secondaries with issues with certificates ${CERISSUES} \n\nFirst up to ${MAX} secondaries with DNS issues ${DNSISSUES}\"}"
+curl --location --request POST "${URL}" --header 'Content-Type: application/json' --data-raw "{\"text\": \"Total number of secondaries with certificate or DNS problems ${TOTALPROBLEMS}\n\n${CERTPROBLEMSCOUNT} Secondary Certificates that expire in less than $EXPIREDAYS days\n${DNSPROBLEMSCOUNT} Problematic Secondary DNS entries\n\nFirst up to ${MAX} secondaries with issues with certificates ${CERTISSUES} \n\nFirst up to ${MAX} secondaries with DNS issues ${DNSISSUES}\"}"
 fi
