@@ -9,7 +9,7 @@ if {[llength $argv] != 1} {
 
 set port [lindex $argv 0]
 
-spawn openssl s_client -ign_eof -brief 0:$port
+spawn openssl s_client -ign_eof -brief cicd1.atsign.wtf:$port 
 
 expect {
 timeout { send_user "Connection failed to get @ prompt on port $port\n"; exit 1}
@@ -17,12 +17,12 @@ eof { send_user "TCP connection failed to port $port\n"; exit 1}
 "\n@"
 }
 
-send "info:brief\r"
+send "info\r"
 
 expect {
 timeout { send_user "Scan failed on port $port\n"; exit 1}
 eof { send_user "Scan failed on port $port\n"; exit 1}
-"data:"
+"{*}" { send_user "$expect_out(0,string)\n"}
 }
 
 send "\003"

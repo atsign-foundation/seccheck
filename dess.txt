@@ -1,2 +1,10 @@
 cicd1.atsign.wtf:6464
 cicd2.atsign.wtf:6464
+cicd3.atsign.wtf:6465
+cicd4.atsign.wtf:6465
+cicd5.atsign.wtf:6466
+cicd6.atsign.wtf:6466
+ce2e1_secondary.atsign.wtf:6564
+ce2e2_secondary.atsign.wtf:6564
+ce2e3_secondary.atsign.wtf:6565
+ce2e4_secondary.atsign.wtf:6565

@@ -1,0 +1,59 @@
+#!/bin/bash
+#
+FULL_PATH_TO_SCRIPT="$(realpath "$0")"
+SCRIPT_DIRECTORY="$(dirname "$FULL_PATH_TO_SCRIPT")"
+
+if [ ! -f "$SCRIPT_DIRECTORY/.ENV" ]; then
+    echo "$SCRIPT_DIRECTORY/.ENV does not exist."
+    echo "ENV.example is template to use"
+    exit 1
+fi
+
+source "$SCRIPT_DIRECTORY"/.ENV
+PID=$$
+mkdir -p "$DIR"
+LOG="$DIR/secscan.${PID}.log"
+LOGDC="$DIR/secscan_dc.${PID}.log"
+touch "$LOG"
+# Get list of ports to test then test them..
+# Ignore secondaries that have been turned down with docker service scale <ID>=0
+SERVICELIST=$(docker service ls)
+for PORT in $(echo "$SERVICELIST" | grep -v '0/0'|grep secondary:"$VERSION" |sed 's/.*\*://'|sed 's/->.*$//')
+do
+    "$SCRIPT_DIRECTORY"/scansecondary.expect "$PORT" >> "$LOG"
+done
+RESULTS="$(wc -l "$LOG" |cut -d' ' -f1)"
+# Lets double check we still have failures
+# It's important to wait just a while as docker may have restarted a container
+# Or Shepherd might be upgrading a container
+if (( RESULTS > 0 ))
+then
+    sleep 60
+    for DCPORT in $(awk '{print $NF}' "$LOG")
+    do
+        "$SCRIPT_DIRECTORY"/scansecondary.expect "$DCPORT" >> "$LOGDC"
+    done
+    DCRESULTS="$(wc -l "$LOGDC" | cut -d' ' -f1)"
+fi
+
+if (( DCRESULTS > 0 ))
+then
+# Send results to gChat
+    curl --location --request POST "${URL}" --header 'Content-Type: application/json' --data-raw "{\"text\": \"${DCRESULTS} Problematic Secondaries on scan\"}"
+    for PORT in $(tail -"$MAX" "$LOGDC" | awk '{print $NF}')
+    do
+        SECONDARY=$(echo "$SERVICELIST" |grep "$PORT->$PORT/tcp" |awk '{print $2}')
+        ATSIGN=$(docker service inspect "$SECONDARY" --pretty | grep Args |awk '{print $3}')
+        ATSIGNS="$ATSIGN ($PORT), $ATSIGNS"
+    done
+    curl --location --request POST "${URL}" --header 'Content-Type: application/json' --data-raw "{\"text\": \"Of the ${DCRESULTS} these are the first few effected @signs,  $ATSIGNS\"}"
+fi
+#
+# Do some tidying up of logs files
+COUNT=$(ls -1 "$DIR" | wc -l)
+LEFT=$((COUNT - LEAVE))
+if (( LEFT >= 0 ))
+then
+    rm -f $(ls -td "$DIR"/* |tail -$LEFT)
+fi
+exit 0

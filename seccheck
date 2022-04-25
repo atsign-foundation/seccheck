@@ -17,7 +17,8 @@ LOGDC="$DIR/seccheck_dc.${PID}.log"
 touch "$LOG"
 # Get list of ports to test then test them..
 # Ignore secondaries that have been turned down with docker service scale <ID>=0
-for PORT in $(docker service ls | grep -v '0/0'|grep secondary:"$VERSION" |sed 's/.*\*://'|sed 's/->.*$//')
+SERVICELIST=$(docker service ls)
+for PORT in $(echo "$SERVICELIST" | grep -v '0/0'|grep secondary:"$VERSION" |sed 's/.*\*://'|sed 's/->.*$//')
 do
     "$SCRIPT_DIRECTORY"/checksecondary.expect "$PORT" >> "$LOG"
 done
@@ -41,7 +42,7 @@ then
     curl --location --request POST "${URL}" --header 'Content-Type: application/json' --data-raw "{\"text\": \"${DCRESULTS} Problematic Secondaries \"}"
     for PORT in $(tail -"$MAX" "$LOGDC" | awk '{print $NF}')
     do
-        SECONDARY=$(docker service ls |grep "$PORT->$PORT/tcp" |awk '{print $2}')
+        SECONDARY=$(echo "$SERVICELIST" |grep "$PORT->$PORT/tcp" |awk '{print $2}')
         ATSIGN=$(docker service inspect "$SECONDARY" --pretty | grep Args |awk '{print $3}')
         ATSIGNS="$ATSIGN ($PORT), $ATSIGNS"
     done
