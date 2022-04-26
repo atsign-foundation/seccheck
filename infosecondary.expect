@@ -22,7 +22,7 @@ send "info:brief\r"
 expect {
 timeout { send_user "Scan failed on port $port\n"; exit 1}
 eof { send_user "Scan failed on port $port\n"; exit 1}
-"data:"
+"{*}" { send_user "$expect_out(0,string)\n"}
 }
 
 send "\003"

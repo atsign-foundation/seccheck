@@ -17,12 +17,12 @@ eof { send_user "TCP connection failed to $hostport\n"; exit 1}
 "\n@"
 }
 
-send "scan\r"
+send "info:brief\r"
 
 expect {
 timeout { send_user "Scan failed on $hostport\n"; exit 1}
 eof { send_user "Scan failed on $hostport\n"; exit 1}
-"signing_publickey@"
+"data:"
 }
 
 send "\003"

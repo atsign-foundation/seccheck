@@ -12,15 +12,15 @@ fi
 source "$SCRIPT_DIRECTORY"/.ENV
 PID=$$
 mkdir -p "$DIR"
-LOG="$DIR/seccheck.${PID}.log"
-LOGDC="$DIR/seccheck_dc.${PID}.log"
+LOG="$DIR/secscan.${PID}.log"
+LOGDC="$DIR/secscan_dc.${PID}.log"
 touch "$LOG"
 # Get list of ports to test then test them..
 # Ignore secondaries that have been turned down with docker service scale <ID>=0
 SERVICELIST=$(docker service ls)
 for PORT in $(echo "$SERVICELIST" | grep -v '0/0'|grep secondary:"$VERSION" |sed 's/.*\*://'|sed 's/->.*$//')
 do
-    "$SCRIPT_DIRECTORY"/checksecondary.expect "$PORT" >> "$LOG"
+    "$SCRIPT_DIRECTORY"/scansecondary.expect "$PORT" >> "$LOG"
 done
 RESULTS="$(wc -l "$LOG" |cut -d' ' -f1)"
 # Lets double check we still have failures
@@ -31,7 +31,7 @@ then
     sleep 60
     for DCPORT in $(awk '{print $NF}' "$LOG")
     do
-        "$SCRIPT_DIRECTORY"/checksecondary.expect "$DCPORT" >> "$LOGDC"
+        "$SCRIPT_DIRECTORY"/scansecondary.expect "$DCPORT" >> "$LOGDC"
     done
     DCRESULTS="$(wc -l "$LOGDC" | cut -d' ' -f1)"
 fi
@@ -39,7 +39,7 @@ fi
 if (( DCRESULTS > 0 ))
 then
 # Send results to gChat
-    curl --location --request POST "${URL}" --header 'Content-Type: application/json' --data-raw "{\"text\": \"${DCRESULTS} Problematic Secondaries \"}"
+    curl --location --request POST "${URL}" --header 'Content-Type: application/json' --data-raw "{\"text\": \"${DCRESULTS} Problematic Secondaries on scan\"}"
     for PORT in $(tail -"$MAX" "$LOGDC" | awk '{print $NF}')
     do
         SECONDARY=$(echo "$SERVICELIST" |grep "$PORT->$PORT/tcp" |awk '{print $2}')
