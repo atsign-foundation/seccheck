@@ -1,0 +1,42 @@
+#!/bin/bash
+FULL_PATH_TO_SCRIPT="$(realpath "$0")"
+SCRIPT_DIRECTORY="$(dirname "$FULL_PATH_TO_SCRIPT")"
+
+if [ ! -f "$SCRIPT_DIRECTORY/.ENV" ]; then
+    echo "$SCRIPT_DIRECTORY/.ENV does not exist."
+    echo "ENV.example is template to use"
+    exit 1
+fi
+source "$SCRIPT_DIRECTORY"/.ENV
+PID=$$
+mkdir -p "$DIR"
+LOG="$DIR/seccheck.${PID}.log"
+LOGDC="$DIR/seccheck_dc.${PID}.log"
+touch "$LOG"
+# Get list of services is in(0/0|0/1) state
+SERVICELIST=$(docker service ls)
+for SERVICE in $(echo "$SERVICELIST" | awk '{print $2 ":("$4")"}' | grep -E '0/0|0/1')
+do
+    echo $SERVICE >> "$LOG"
+done
+DCRESULTS=$(wc -l "$LOG" |cut -d' ' -f1)
+if (( DCRESULTS  > 0 ))
+then
+# Send results to gChat
+    curl --location --request POST "${URL}" --header 'Content-Type: application/json' --data-raw "{\"text\": \"${DCRESULTS} Problematic Services(0/0|0/1) \"}"
+    for UUID in $(tail -"$MAX" "$LOG")
+    do
+        SERVICE=$(echo "$UUID" | cut -d'_' -f1)
+        STATE=$(echo "$UUID" | cut -d':' -f2)
+	SERVICES="$SERVICE ($STATE)"
+    done
+    curl --location --request POST "${URL}" --header 'Content-Type: application/json' --data-raw "{\"text\": \"Of the ${DCRESULTS} these are the first few effected services,  $SERVICES\"}"
+fi
+# Do some tidying up of logs files
+COUNT=$(ls -1 "$DIR" | wc -l)
+LEFT=$((COUNT - LEAVE))
+if (( LEFT >= 0 ))
+then
+    rm -f $(ls -td "$DIR"/* |tail -$LEFT)
+fi
+exit 0
