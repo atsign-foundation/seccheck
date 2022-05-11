@@ -10,8 +10,8 @@ fi
 source "$SCRIPT_DIRECTORY"/.ENV
 PID=$$
 mkdir -p "$DIR"
-LOG="$DIR/seccheck.${PID}.log"
-LOGDC="$DIR/seccheck_dc.${PID}.log"
+LOG="$DIR/secstatecheck.${PID}.log"
+LOGDC="$DIR/secstatecheck_dc.${PID}.log"
 touch "$LOG"
 # Get list of services is in(0/0|0/1) state
 SERVICELIST=$(docker service ls)
