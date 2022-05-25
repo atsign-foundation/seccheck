@@ -1,0 +1,57 @@
+#!/bin/bash
+FULL_PATH_TO_SCRIPT="$(realpath "$0")"
+SCRIPT_DIRECTORY="$(dirname "$FULL_PATH_TO_SCRIPT")"
+
+if [ ! -f "$SCRIPT_DIRECTORY/.ENV" ]; then
+    echo "$SCRIPT_DIRECTORY/.ENV does not exist."
+    echo "ENV.example is template to use"
+    exit 1
+fi
+source "$SCRIPT_DIRECTORY"/.ENV
+PID=$$
+mkdir -p "$DIR/secstatecheck1-tmp"
+SECSTATEDIR=$DIR/secstatecheck1-tmp
+LOG="$DIR/secstatecheck.${PID}.log"
+LOGDC="$DIR/secstatecheck_dc.${PID}.log"
+touch "$LOG"
+# Get list of services is in(0/0) state
+SERVICELIST=$(docker service ls)
+for SERVICE in $(echo "$SERVICELIST" | awk '{print $2 ":("$4")"}' | grep -E '0/1')
+do
+    echo $SERVICE >> "$LOG"
+done
+DCRESULTS=$(wc -l "$LOG" |cut -d' ' -f1)
+if (( DCRESULTS  > 0 ))
+then
+
+    for UUID in $(tail -"$MAX" "$LOG")
+    do
+	TMPFILETOCHECK=$(echo $UUID | cut -f1 -d'_')
+	# check if tmp state file exist
+        if [ ! -f "$SECSTATEDIR/$TMPFILETOCHECK.temp" ];
+        then
+            touch "$SECSTATEDIR/$TMPFILETOCHECK.temp"
+        else
+            SERVICE=( $(echo "$UUID" | cut -d'_' -f1) )
+            STATE=$(echo "$UUID" | cut -d':' -f2)
+            SERVICES="$SERVICE ($STATE), $SERVICES"
+            rm "$SECSTATEDIR/$TMPFILETOCHECK.temp"
+        fi
+    done
+    # check if service var is not null
+    if [ ! -z "$SERVICES" ]
+    then
+      # Send results to gChat
+      curl --location --request POST "${URL}" --header 'Content-Type: application/json' --data-raw "{\"text\": \"${DCRESULTS} Problematic Services(0/1) \"}"
+      curl --location --request POST "${URL}" --header 'Content-Type: application/json' --data-raw "{\"text\": \"Of the ${DCRESULTS} these are the first few effected services,  $SERVICES\"}"
+    fi
+
+fi
+# Do some tidying up of logs files
+COUNT=$(ls -1 "$DIR" | wc -l)
+LEFT=$((COUNT - LEAVE))
+if (( LEFT >= 0 ))
+then
+    rm -f $(ls -td "$DIR"/* |tail -$LEFT)
+fi
+exit 0
