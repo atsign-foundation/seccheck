@@ -71,7 +71,7 @@ On occasion certficates can fail to get updated and it is nice to know before it
 ### Bonus Commands
 
 If you are fault finding on a swarm you will find yourself looking up ports
-from Atsigns and Atsigns to ports... so
+from Atsigns and looking up Atsigns from ports... so
 
 a2d <Atsign>    Will convert an Atsign to a DNS:Port  
 p2s <port>      Will convert a port number to the secondary docker instance
