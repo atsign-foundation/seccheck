@@ -14,7 +14,7 @@ We welcome contributions - we want pull requests and to hear about issues.
 
 ## Who is this for?
 
-This script is for DevOps who run a docker swarm running the @protocol and
+This script is for DevOps who run a docker swarm running the atProtocol and
 who want to ensure the well being of the secondaries running on the swarm.
 
 ## Why, What, How?
@@ -71,12 +71,12 @@ On occasion certficates can fail to get updated and it is nice to know before it
 ### Bonus Commands
 
 If you are fault finding on a swarm you will find yourself looking up ports
-from @signs and @signs to ports... so
+from Atsigns and looking up Atsigns from ports... so
 
-a2d <@sign>    Will convert an @sign to a DNS:Port  
+a2d <Atsign>    Will convert an Atsign to a DNS:Port  
 p2s <port>      Will convert a port number to the secondary docker instance
-and the @sign it is hosting  
-sa2d <@sign>    Will convert a staging @sign to a DNS:Port  
+and the Atsign it is hosting  
+sa2d <Atsign>    Will convert a staging Atsign to a DNS:Port  
 
 These commands can be found in atsign-company/seccheck 
 (s)a2d can run anywhere expect is installed
