@@ -1,15 +1,17 @@
 #!/bin/bash
-#
 FULL_PATH_TO_SCRIPT="$(realpath "$0")"
 SCRIPT_DIRECTORY="$(dirname "$FULL_PATH_TO_SCRIPT")"
 
-if [ ! -f "$SCRIPT_DIRECTORY/.ENV" ]; then
-    echo "$SCRIPT_DIRECTORY/.ENV does not exist."
-    echo "ENV.example is template to use"
-    exit 1
+# set env to get DOMAIN, DO_KEY and gChat_url
+if [ ! -f "/root/.env" ]; then
+    echo "/root/.env does not exist."
+    echo "env_example is template to use"
+    exit 2
 fi
-
-source "$SCRIPT_DIRECTORY"/.ENV
+source /root/.env
+if [ -z ${DOMAIN+x} ]; then echo "DOMAIN must be set"; exit 3; fi
+if [ -z ${DO_KEY+x} ]; then echo "DO_KEY must be set"; exit 4; fi
+if [ -z ${gChat_url+x} ]; then echo "gChat_url must be set"; exit 5; fi
 PID=$$
 mkdir -p "$DIR"
 LOG="$DIR/secscan.${PID}.log"
@@ -39,14 +41,14 @@ fi
 if (( DCRESULTS > 0 ))
 then
 # Send results to gChat
-    curl --location --request POST "${URL}" --header 'Content-Type: application/json' --data-raw "{\"text\": \"${DCRESULTS} Problematic Secondaries on scan\"}"
+    curl --location --request POST "${gChat_url}" --header 'Content-Type: application/json' --data-raw "{\"text\": \"${DCRESULTS} Problematic Secondaries on scan\"}"
     for PORT in $(tail -"$MAX" "$LOGDC" | awk '{print $NF}')
     do
         SECONDARY=$(echo "$SERVICELIST" |grep "$PORT->$PORT/tcp" |awk '{print $2}')
         ATSIGN=$(docker service inspect "$SECONDARY" --pretty | grep Args |awk '{print $3}')
         ATSIGNS="$ATSIGN ($PORT), $ATSIGNS"
     done
-    curl --location --request POST "${URL}" --header 'Content-Type: application/json' --data-raw "{\"text\": \"Of the ${DCRESULTS} these are the first few effected @signs,  $ATSIGNS\"}"
+    curl --location --request POST "${gChat_url}" --header 'Content-Type: application/json' --data-raw "{\"text\": \"Of the ${DCRESULTS} these are the first few effected @signs,  $ATSIGNS\"}"
 fi
 #
 # Do some tidying up of logs files

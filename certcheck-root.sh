@@ -1,16 +1,18 @@
 #!/bin/bash
-#
 DNSERROR="DNS Error "
 FULL_PATH_TO_SCRIPT="$(realpath "$0")"
 SCRIPT_DIRECTORY="$(dirname "$FULL_PATH_TO_SCRIPT")"
 
-if [ ! -f "$SCRIPT_DIRECTORY/.ENV" ]; then
-    echo "$SCRIPT_DIRECTORY/.ENV does not exist."
-    echo "ENV.example is template to use"
-    exit 1
+# set env to get DOMAIN, DO_KEY and gChat_url
+if [ ! -f "/root/.env" ]; then
+    echo "/root/.env does not exist."
+    echo "env_example is template to use"
+    exit 2
 fi
-source "$SCRIPT_DIRECTORY"/.ENV
-
+source /root/.env
+if [ -z ${DOMAIN+x} ]; then echo "DOMAIN must be set"; exit 3; fi
+if [ -z ${DO_KEY+x} ]; then echo "DO_KEY must be set"; exit 4; fi
+if [ -z ${gChat_url+x} ]; then echo "gChat_url must be set"; exit 5; fi
 PID=$$
 mkdir -p "$DIR"
 LISTSEC="$DIR/seclistroot.${PID}.log"
@@ -51,6 +53,6 @@ CERTPROBLEMSCOUNT=$((TOTALPROBLEMS))
 
 if [[ $TOTALPROBLEMS -gt 0 ]]
 then
-curl --location --request POST "${URL}" --header 'Content-Type: application/json' --data-raw "{\"text\": \"${CERTPROBLEMSCOUNT} Root Certificates that expire in less than
+curl --location --request POST "${gChat_url}" --header 'Content-Type: application/json' --data-raw "{\"text\": \"${CERTPROBLEMSCOUNT} Root Certificates that expire in less than
  $EXPIREDAYS days\n root servers with certificate issues ${CERTISSUES} \n\nFirst up to ${MAX} \"}"
 fi

@@ -1,7 +1,6 @@
 #!/bin/bash
 FULL_PATH_TO_SCRIPT="$(realpath "$0")"
 SCRIPT_DIRECTORY="$(dirname "$FULL_PATH_TO_SCRIPT")"
-
 # set env to get DOMAIN, DO_KEY and gChat_url
 if [ ! -f "/root/.env" ]; then
     echo "/root/.env does not exist."
@@ -20,18 +19,20 @@ touch "$LOG"
 # Ignore secondaries that have been turned down with docker service scale <ID>=0
 for PORT in $(docker service ls | grep -v '0/0'|grep secondary:"$VERSION" |sed 's/.*\*://'|sed 's/->.*$//')
 do
-  "$SCRIPT_DIRECTORY"/infosecondary.expect "$PORT" | jq -r .version >> "$LOG"
+  SECVER=$("$SCRIPT_DIRECTORY"/infosecondary.expect "$PORT" | jq -r .version)
+  echo "$SECVER" >> "$LOG"
+  if [ "$SECVER" == "null" ]; then echo "$PORT"; fi
 done
 RESULTS="$(sort "$LOG" | uniq -c)"
 # Send results to gChat
 curl --location --request POST "${gChat_url}" --header 'Content-Type: application/json' \
-   --data-raw "{\"text\": \"Secondary versions: \\n ${RESULTS} \"}"
+  --data-raw "{\"text\": \"Secondary versions: \\n ${RESULTS} \"}"
 #
 # Do some tidying up of logs files
 COUNT=$(ls -1 "$DIR" | wc -l)
 LEFT=$((COUNT - LEAVE))
 if (( LEFT >= 0 ))
 then
-     rm -f $(ls -td "$DIR"/* |tail -$LEFT)
+    rm -f $(ls -td "$DIR"/* |tail -$LEFT)
 fi
 exit 0
