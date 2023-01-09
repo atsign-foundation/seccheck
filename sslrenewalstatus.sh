@@ -1,7 +1,7 @@
 #!/bin/bash
 FULL_PATH_TO_SCRIPT="$(realpath "$0")"
 SCRIPT_DIRECTORY="$(dirname "$FULL_PATH_TO_SCRIPT")"
-# set env to get DOMAIN
+# set env to get gChat url
 if [ ! -f "/root/.env" ]; then
     echo "/root/.env does not exist."
     echo "env_example is template to use"
