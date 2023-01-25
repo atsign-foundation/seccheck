@@ -17,7 +17,9 @@ touch "$LOG"
 echo "Success-" >> "$LOG"
 echo "Warnings-" >> "$LOG"
 echo "Critical-" >> "$LOG" 
-for line in $(cat /gluster/@/api/lock/renew_certs_hosts.lock)
+rm -rf /gluster/@/api/lock/ssl_alerts/*
+gsutil cp gs://certs_renewal_lock/renew_certs_hosts.lock /gluster/@/api/lock/ssl_alerts
+for line in $(cat /gluster/@/api/lock/ssl_alerts/renew_certs_hosts.lock)
 do
     HOST=$(echo $line | cut -d'-' -f-1)
     LAST_RENEWAL_DATE=$(echo "$line" | rev | cut -d'-' -f 1 | rev)
@@ -34,7 +36,7 @@ do
         sed -i "/Warnings-/a Warning - $HOST: Certs Renewal process last run was $LAST_RAN_IN_DAYS days ago" "$LOG"
         warning="true"
     else
-        echo "Error parsing host"
+        echo "Error Parsing HOst"
         exit 1
     fi;
 done
