@@ -65,3 +65,4 @@ echo "$RESULTS"
 curl --location --request POST "${gChat_url}" --header 'Content-Type: application/json' \
  --data-raw "{\"text\": \"SSl Renewal Status : \\n${RESULTS} \"}"
 rm -rf "$LOG"
+
