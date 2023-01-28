@@ -36,7 +36,7 @@ do
         sed -i "/Warnings-/a Warning - $HOST: Certs Renewal process last run was $LAST_RAN_IN_DAYS days ago" "$LOG"
         warning="true"
     else
-        echo "Error Parsing HOst"
+        echo "Error parsing host"
         exit 1
     fi;
 done
