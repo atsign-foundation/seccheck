@@ -17,7 +17,9 @@ touch "$LOG"
 echo "Success-" >> "$LOG"
 echo "Warnings-" >> "$LOG"
 echo "Critical-" >> "$LOG" 
-for line in $(cat /gluster/@/api/lock/renew_certs_hosts.lock)
+rm -rf /gluster/@/api/lock/ssl_alerts/*
+gsutil cp gs://certs_renewal_lock/renew_certs_hosts.lock /gluster/@/api/lock/ssl_alerts
+for line in $(cat /gluster/@/api/lock/ssl_alerts/renew_certs_hosts.lock)
 do
     HOST=$(echo $line | cut -d'-' -f-1)
     LAST_RENEWAL_DATE=$(echo "$line" | rev | cut -d'-' -f 1 | rev)
@@ -63,3 +65,4 @@ echo "$RESULTS"
 curl --location --request POST "${gChat_url}" --header 'Content-Type: application/json' \
  --data-raw "{\"text\": \"SSl Renewal Status : \\n${RESULTS} \"}"
 rm -rf "$LOG"
+
