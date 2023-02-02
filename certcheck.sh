@@ -77,3 +77,4 @@ if [[ $TOTALPROBLEMS -gt 0 ]]
 then
 curl --location --request POST "${gChat_url}" --header 'Content-Type: application/json' --data-raw "{\"text\": \"Total number of secondaries with certificate or DNS problems ${TOTALPROBLEMS}\n\n${CERTPROBLEMSCOUNT} Secondary Certificates that expire in less than $EXPIREDAYS days\n${DNSPROBLEMSCOUNT} Problematic Secondary DNS entries\n\nFirst up to ${MAX} secondaries with issues with certificates ${CERTISSUES} \n\nFirst up to ${MAX} secondaries with DNS issues ${DNSISSUES}\"}"
 fi
+
