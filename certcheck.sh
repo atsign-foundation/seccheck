@@ -24,9 +24,8 @@ CERTISSUESEC="$DIR/certissues.${PID}.log"
 EXPIREDAYS=$(($EXPIREDAYS * 86400)) 
 #
 # Get the services
-docker service ls |grep 1/1 |grep secondary:"$VERSION"| awk '{ print $2 $6} ' | sed 's/_secondary\*/'.${DOMAIN}'/g' |sed 's/->.*$//g' > $LISTSEC
-echo $LISTSEC
-#Cylce through the services
+docker service ls |grep 1/1 |grep -e secondary:"$VERSION" -e registry | awk '{ print $2 $6}' | sed 's/_secondary\*/'.${DOMAIN}'/g' | sed 's/_registry\*/'.${DOMAIN}'/g' | sed 's/->.*$//g' > $LISTSEC
+# Cylce through the services
 # Check DNS entry
 # Check Expiry Date within X days
 echo -n > $DATESEC
@@ -36,15 +35,20 @@ do
         nslookup  ${secondary//:*/} &>/dev/null
         if [[ $? -eq 0 ]]
          then
-		 LBTEST=$(nslookup ${secondary//:*/} | grep $LB | wc -l)
-		 if [[ $LBTEST -eq 1 ]]
-		 then
-                 echo | openssl s_client -showcerts -connect $secondary 2>/dev/null | openssl x509 -noout  -checkend $EXPIREDAYS >> $DATESEC
-		 else
-	         echo "$DNSERROR: record not pointing to Load Balancer $LB" >> $DATESEC
-		 fi 
-         else
-                echo "$DNSERROR: record not found" >> $DATESEC
+            if [[ $secondary != *"reg."* ]]; 
+            then
+                LBTEST=$(nslookup ${secondary//:*/} | grep $LB | wc -l)
+                if [[ $LBTEST -eq 1 ]]
+                then
+                    echo | openssl s_client -showcerts -connect $secondary 2>/dev/null | openssl x509 -noout  -checkend $EXPIREDAYS >> $DATESEC
+                else
+                    echo "$DNSERROR: record not pointing to Load Balancer $LB" >> $DATESEC
+                fi 
+            else
+                echo | openssl s_client -showcerts -connect $secondary 2>/dev/null | openssl x509 -noout  -checkend $EXPIREDAYS >> $DATESEC
+            fi
+        else
+            echo "$DNSERROR: record not found" >> $DATESEC
         fi
  done
 
@@ -73,3 +77,4 @@ if [[ $TOTALPROBLEMS -gt 0 ]]
 then
 curl --location --request POST "${gChat_url}" --header 'Content-Type: application/json' --data-raw "{\"text\": \"Total number of secondaries with certificate or DNS problems ${TOTALPROBLEMS}\n\n${CERTPROBLEMSCOUNT} Secondary Certificates that expire in less than $EXPIREDAYS days\n${DNSPROBLEMSCOUNT} Problematic Secondary DNS entries\n\nFirst up to ${MAX} secondaries with issues with certificates ${CERTISSUES} \n\nFirst up to ${MAX} secondaries with DNS issues ${DNSISSUES}\"}"
 fi
+
