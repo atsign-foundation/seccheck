@@ -11,3 +11,4 @@ then
     # remove restart file
     rm /gluster/@/etc/letsencrypt/live/$DOMAIN/restart
 fi
+
