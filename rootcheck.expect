@@ -1,0 +1,11 @@
+#!/usr/bin/expect
+proc abort { } { send_user "\nTimeout!\n" ; exit 1 }
+set timeout 5
+expect_before timeout abort
+spawn openssl  s_client -brief root.atsign.org:64
+expect "@"
+send "rootcheck\n"
+expect "4e0e3da7-2bc5-5e5c-93bb-c28eacd6abbe.swarm0002.atsign.zone:6473"
+send "@exit\n"
+puts "\n"
+exit 0
