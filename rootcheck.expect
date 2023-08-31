@@ -4,8 +4,8 @@ set timeout 5
 expect_before timeout abort
 spawn openssl  s_client -brief root.atsign.org:64
 expect "@"
-send "colin\n"
-expect "79b6d83f-5026-5fda-8299-5a0704bd2416.canary.atsign.zone:1029"
+send "rootcheck\n"
+expect "4e0e3da7-2bc5-5e5c-93bb-c28eacd6abbe.swarm0002.atsign.zone:6473"
 send "@exit\n"
 puts "\n"
 exit 0
