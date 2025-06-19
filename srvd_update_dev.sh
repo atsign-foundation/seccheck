@@ -5,8 +5,8 @@ set -e
 # Edit these values for the Relay being deployed
 BASE_IMAGE="atsigncompany/srvd:dev_env"
 REGISTRY="docker.io"
-ATSIGN="@rv_dev"
-IP="38.180.60.176"
+ATSIGN="@<atSign>"
+IP="<IP of RV"
 ATKEYS_LOCATION=".atsign/dev_keys/"
 ROOT="root.atsign.wtf"
 ######
